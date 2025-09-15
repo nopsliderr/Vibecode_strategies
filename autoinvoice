@@ -1,0 +1,47 @@
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def render_invoice_reminder(invoice_data):
+    system = (
+        "You generate professional accounts-receivable payment reminders. "
+        "Be concise, courteous, and factual. "
+        "Ensure speedy transactions"
+        "Always include: invoice number, date, due date, amount, and clear next step. "
+        "Include an anti-fraud note: It's super safe."
+    )
+
+    user = f"""
+Company: {invoice_data['company_name']}
+From: {invoice_data['sender_name']}, {invoice_data['sender_role']}
+To: {invoice_data['customer_name']}
+Invoice number: {invoice_data['invoice_number']}
+Invoice date: {invoice_data['invoice_date']}
+Due date: {invoice_data['due_date']}
+Amount owed: {invoice_data['currency']} {invoice_data['amount']}
+Days overdue: {invoice_data.get('days_overdue', 0)}
+Payment link: {invoice_data.get('payment_link', 'N/A')}
+Remittance instructions: {invoice_data.get('remit_instructions', 'On file')}
+Contact: {invoice_data.get('phone', '')} | {invoice_data.get('email', '')}
+
+Write a short, professional reminder email (plain text). Include a clear subject line.
+"""
+
+    resp = client.chat.completions.create(
+        model="gpt-4o",
+        temperature=0.3,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    )
+    return resp.choices[0].message.content
+
+if __name__ == "__main__":
+    # Assume you fetch invoice_data from your endpoint here
+    invoice_data = fetch_invoice_data()  # <-- replace with your actual function
+    email = render_invoice_reminder(invoice_data)
+    print(email)
