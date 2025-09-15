@@ -41,7 +41,6 @@ Write a short, professional reminder email (plain text). Include a clear subject
     return resp.choices[0].message.content
 
 if __name__ == "__main__":
-    # Assume you fetch invoice_data from your endpoint here
     invoice_data = fetch_invoice_data()  # <-- replace with your actual function
     email = render_invoice_reminder(invoice_data)
     print(email)
